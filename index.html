@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+	<head>
+	<meta charset="utf-8">
+		<link rel="stylesheet" href="https://cdn.rawgit.com/openlayers/openlayers.github.io/master/en/v5.3.0/css/ol.css" type="text/css">
+		<style>
+			html, body, .map {
+				margin: 0;
+				padding: 0;
+				height: 100%;
+				width: 100%;
+			}
+		</style>
+		<script src="https://cdn.rawgit.com/openlayers/openlayers.github.io/master/en/v5.3.0/build/ol.js"></script>
+		<title>Simple route planner</title>
+	</head>
+	<body>
+		<div id="map" class="map"></div>
+		<script type="text/javascript">
+			var map = new ol.Map({
+				target: 'map',
+				layers: [
+					new ol.layer.Tile({
+						source: new ol.source.XYZ({
+							url: 'https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+						})
+					}),
+					/* Add further layers here */
+				],
+				view: new ol.View({
+					center: ol.proj.fromLonLat([-20.05, 64.085]),
+					zoom: 11
+				})
+			});
+		</script>
+	</body>
+</html>
