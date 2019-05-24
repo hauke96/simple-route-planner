@@ -295,31 +295,16 @@
 				return output;
 			};
 
-			map.on('click', displayFeatureInfo);
+			//map.on('click', displayFeatureInfo);
 
-			function displayFeatureInfo(evt){
-				if(anyToolActicated()) return;
-
-			    //get pixel position of click event
-			    var pixel = evt.pixel;
-			    var features = [];
-			    //loop through all features under this pixel coordinate
-			    //and save them in array
-			    map.forEachFeatureAtPixel(pixel, function(feature, layer) {
-			        features.push(feature)
-			    }, {
-					hitTolerance: 10
-				});
-			
-			    //the top most feature
-			    var target = features[0];
-
+			let selectFeature = new ol.interaction.Select();
+			map.addInteraction(selectFeature);
+			selectFeature.on("select", function(e) {
+			    var target = e.selected[0];
 				if (target) {
 					console.log(formattedLineLength(target.getGeometry()));
 				}
-			}
-
-			// TODO implement measuring: https://openlayers.org/en/latest/examples/measure.html
+			});
 		</script>
 	</body>
 </html>
