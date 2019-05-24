@@ -152,30 +152,36 @@
 			*
 			*/
 
-			var modify = new ol.interaction.Modify({source: source});
-			map.addInteraction(modify);
-	
-			var draw, snap; // global so we can remove them later
+			var draw, snap, modify; // global so we can remove them later
 
 			let typeSelect = document.getElementById('type');
 
-			function addInteractions() {
+			function removeAllInteractions() {
+				map.removeInteraction(draw);
+				map.removeInteraction(snap);
+				map.removeInteraction(modify);
+			}
+
+			function updateInteractions() {
+				removeAllInteractions();
+
 				draw = new ol.interaction.Draw({
 					source: source,
 					type: typeSelect.value
 				});
 				map.addInteraction(draw);
+
 				snap = new ol.interaction.Snap({source: source});
 				map.addInteraction(snap);
+
+				modify = new ol.interaction.Modify({source: source});
+				map.addInteraction(modify);
+	
 			}
 			
 			typeSelect.onchange = function() {
-				map.removeInteraction(draw);
-				map.removeInteraction(snap);
-				addInteractions();
+				updateInteractions();
 			};
-
-			addInteractions();
 
 			function saveFeatures() {
 				let writer = new ol.format.GeoJSON();
@@ -239,6 +245,10 @@
 			// All tools are off per default
 			let geometrySelectionActivated = false;
 
+			function anyToolActicated() {
+				return geometrySelectionActivated;
+			}
+
 			function deactivateAllTools() {
 				let geometrySelection = document.getElementById("geometry-selection");
 				geometrySelection.style.display = "";
@@ -254,8 +264,12 @@
 				let drawButton = document.getElementById("draw-button");
 
 				if (!geometrySelectionActivated) {
+					updateInteractions();
+
 					geometrySelection.style.display = "contents";
 					drawButton.classList.add("clicked");
+				} else {
+					removeAllInteractions();
 				}
 
 				geometrySelectionActivated = !geometrySelectionActivated;
@@ -268,8 +282,8 @@
 			*
 			*
 			*/
-			var formatLength = function(line) {
-				var length = getLength(line);
+			function formattedLineLength(line) {
+				var length = ol.sphere.getLength(line);
 				var output;
 				if (length > 100) {
 					output = (Math.round(length / 1000 * 100) / 100) +
@@ -283,7 +297,9 @@
 
 			map.on('click', displayFeatureInfo);
 
-			function displayFeatureInfo( evt ){
+			function displayFeatureInfo(evt){
+				if(anyToolActicated()) return;
+
 			    //get pixel position of click event
 			    var pixel = evt.pixel;
 			    var features = [];
@@ -291,13 +307,16 @@
 			    //and save them in array
 			    map.forEachFeatureAtPixel(pixel, function(feature, layer) {
 			        features.push(feature)
-			    });
+			    }, {
+					hitTolerance: 10
+				});
 			
 			    //the top most feature
 			    var target = features[0];
-			
-			    //...rest of code
-			    target.get('customProp')
+
+				if (target) {
+					console.log(formattedLineLength(target.getGeometry()));
+				}
 			}
 
 			// TODO implement measuring: https://openlayers.org/en/latest/examples/measure.html
