@@ -4,10 +4,22 @@
 	<meta charset="utf-8">
 		<link rel="stylesheet" href="https://cdn.rawgit.com/openlayers/openlayers.github.io/master/en/v5.3.0/css/ol.css" type="text/css">
 		<style>
-			html, body, .map {
+			html, body {
 				margin: 0;
 				padding: 0;
 				height: 100%;
+				width: 100%;
+			}
+			.container {
+				display: flex;
+				flex-flow: column;
+				height: 100%;
+				padding: 5px;
+			}
+			.map {
+				position: absolute;
+				bottom: 0px;
+				top: 42px;
 				width: 100%;
 			}
 		</style>
@@ -15,8 +27,39 @@
 		<title>Simple route planner</title>
 	</head>
 	<body>
-		<div id="map" class="map"></div>
+		<div class="container">
+			<div>
+				<button type="button" id="speichern" onclick="loadLines()">Laden</button>
+				<button type="button" id="speichern" onclick="saveFeatures()">Speichern</button>
+				<select id="type">
+					<option value="LineString">Linie (z.B. Wanderroute)</option>
+					<option value="Point">Punkt (z.B. Lager)</option>
+					<option value="Polygon">Fläche</option>
+				</select>
+			</div>
+			<div id="map" class="map"></div>
+		</div>
 		<script type="text/javascript">
+			var source = new ol.source.Vector();
+			var vector = new ol.layer.Vector({
+				source: source,
+				style: new ol.style.Style({
+					stroke: new ol.style.Stroke({
+						color: '#ffcc33',
+						width: 3
+					}),
+					fill: new ol.style.Fill({
+						color: 'rgba(255, 255, 255, 0.2)'
+					}),
+					image: new ol.style.Circle({
+						radius: 10,
+						fill: new ol.style.Fill({
+							color: '#ffcc33'
+						})
+					})
+				})
+			});
+
 			var map = new ol.Map({
 				target: 'map',
 				layers: [
@@ -26,12 +69,119 @@
 						})
 					}),
 					/* Add further layers here */
+					vector
 				],
 				view: new ol.View({
 					center: ol.proj.fromLonLat([-20.05, 64.085]),
 					zoom: 11
 				})
 			});
+
+			/*
+			*
+			*
+			*    Interaction
+			*
+			*
+			*/
+
+			var modify = new ol.interaction.Modify({source: source});
+			map.addInteraction(modify);
+	
+			var draw, snap; // global so we can remove them later
+
+			let typeSelect = document.getElementById('type');
+
+			function addInteractions() {
+				draw = new ol.interaction.Draw({
+					source: source,
+					type: typeSelect.value
+				});
+				map.addInteraction(draw);
+				snap = new ol.interaction.Snap({source: source});
+				map.addInteraction(snap);
+			}
+			
+			typeSelect.onchange = function() {
+				map.removeInteraction(draw);
+				map.removeInteraction(snap);
+				addInteractions();
+			};
+
+			addInteractions();
+
+			function saveFeatures() {
+				let writer = new ol.format.GeoJSON();
+				let geojsonStr = writer.writeFeatures(source.getFeatures());
+
+				let now = new Date();
+				let fileName = 'island-route_' + now.getFullYear() + "-" + (now.getMonth() + 1 < 10 ? '0'+(now.getMonth() + 1): now.getMonth() + 1) + "-" + now.getDate() + "_" + now.getHours() + "-" + now.getMinutes() + "-" + now.getSeconds() + ".json";
+
+				console.log(fileName + ": " + geojsonStr);
+
+				var blob = new Blob([geojsonStr], { type: "json" });
+
+				var a = document.createElement('a');
+				a.download = fileName;
+				a.href = URL.createObjectURL(blob);
+				a.dataset.downloadurl = ["json", a.download, a.href].join(':');
+				a.style.display = "none";
+				a.target = '_blank';
+				document.body.appendChild(a);
+				a.click();
+				document.body.removeChild(a);
+				setTimeout(function() { URL.revokeObjectURL(a.href); }, 1500);
+			};
+
+			function loadLines() {
+				var input = document.createElement('input');
+				input.type = 'file';
+
+				input.onchange = e => {
+					var file = e.target.files[0];
+					console.log("Open file '" + file.name + "'");
+					// setting up the reader
+					var reader = new FileReader();
+					reader.readAsText(file,'UTF-8');
+					
+					// here we tell the reader what to do when it's done reading...
+					reader.onload = readerEvent => {
+						var content = readerEvent.target.result; // this is the content!
+						console.log(content);
+
+						var writer = new ol.format.GeoJSON();
+						let obj = JSON.parse(content);
+						var features = writer.readFeatures(obj);
+
+						console.log(features);
+						source.addFeatures(features);
+					}
+				}
+
+				input.click();
+			}
+
+			/*
+			*
+			*
+			*    Measure distance
+			*
+			*
+			*/
+			var formatLength = function(line) {
+				var length = getLength(line);
+				var output;
+				if (length > 100) {
+					output = (Math.round(length / 1000 * 100) / 100) +
+							' ' + 'km';
+				} else {
+					output = (Math.round(length * 100) / 100) +
+							' ' + 'm';
+				}
+				return output;
+			};
+
+			// TODO implement measuring: https://openlayers.org/en/latest/examples/measure.html
 		</script>
 	</body>
 </html>
