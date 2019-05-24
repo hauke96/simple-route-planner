@@ -160,6 +160,7 @@
 				map.removeInteraction(draw);
 				map.removeInteraction(snap);
 				map.removeInteraction(modify);
+				map.removeInteraction(selectFeature);
 			}
 
 			function updateInteractions() {
@@ -270,6 +271,7 @@
 					drawButton.classList.add("clicked");
 				} else {
 					removeAllInteractions();
+					addSelectInteraction();
 				}
 
 				geometrySelectionActivated = !geometrySelectionActivated;
@@ -298,13 +300,18 @@
 			//map.on('click', displayFeatureInfo);
 
 			let selectFeature = new ol.interaction.Select();
-			map.addInteraction(selectFeature);
+
 			selectFeature.on("select", function(e) {
 			    var target = e.selected[0];
 				if (target) {
 					console.log(formattedLineLength(target.getGeometry()));
 				}
 			});
+
+			function addSelectInteraction() {
+				map.addInteraction(selectFeature);
+			}
+			addSelectInteraction();
 		</script>
 	</body>
 </html>
