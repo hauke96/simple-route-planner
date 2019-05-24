@@ -57,6 +57,11 @@
 
 			.map-tool-row {
 				display: flex;
+				justify-content: space-between;
+			}
+
+			.map-tool-selection {
+				display: flex;
 			}
 
 			/*
@@ -91,16 +96,24 @@
 					<button type="button" onclick="saveFeatures()">Speichern</button>
 				</div>
 				<div class="map-tool-row">
-					<button id="draw-button" type="button" onclick="toggleDrawing()">Zeichnen</button>
+					<div class="map-tool-selection">
+						<button id="draw-button" type="button" onclick="toggleDrawing()">Zeichnen</button>
 
-					<div id="space"></div>
+						<div id="space"></div>
 
-					<div id="geometry-selection">
-						<select id="type">
-							<option value="LineString">Linie (z.B. Wanderroute)</option>
-							<option value="Point">Punkt (z.B. Lager)</option>
-							<option value="Polygon">Fläche</option>
-						</select>
+						<div id="geometry-selection">
+							<select id="type">
+								<option value="LineString">Linie (z.B. Wanderroute)</option>
+								<option value="Point">Punkt (z.B. Lager)</option>
+								<option value="Polygon">Fläche</option>
+							</select>
+						</div>
+					</div>
+
+					<div class="map-feature-info">
+						<div id="line-length-info" >
+							<span>Line length: </span><span id="line-length-label"></span>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -304,7 +317,9 @@
 			selectFeature.on("select", function(e) {
 			    var target = e.selected[0];
 				if (target) {
-					console.log(formattedLineLength(target.getGeometry()));
+					let length = formattedLineLength(target.getGeometry());
+					console.log(length);
+					document.getElementById("line-length-label").innerHTML = length;
 				}
 			});
 
