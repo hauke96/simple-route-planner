@@ -98,6 +98,7 @@
 				<div class="map-tool-row">
 					<div class="map-tool-selection">
 						<button id="draw-button" type="button" onclick="toggleDrawing()">Draw</button>
+						<button id="measure-distance-button" type="button" onclick="toggleMeasureDistance()">Distance</button>
 
 						<div id="space"></div>
 
@@ -190,7 +191,6 @@
 
 				modify = new ol.interaction.Modify({source: source});
 				map.addInteraction(modify);
-	
 			}
 			
 			typeSelect.onchange = function() {
@@ -258,36 +258,67 @@
 
 			// All tools are off per default
 			let geometrySelectionActivated = false;
+			let infoLabelActivated = false;
 
 			function anyToolActicated() {
 				return geometrySelectionActivated;
 			}
 
 			function deactivateAllTools() {
+				// Draw
 				let geometrySelection = document.getElementById("geometry-selection");
 				geometrySelection.style.display = "";
 
-				let drawButton = document.getElementById("draw-button");
-				drawButton.classList.remove("clicked");
+				let button = document.getElementById("draw-button");
+				button.classList.remove("clicked");
+
+				// Measure
+				let lengthLabel = document.getElementById("line-length-info");
+				lengthLabel.style.display = "";
+
+				button = document.getElementById("measure-distance-button");
+				button.classList.remove("clicked");
+
+				// Set variables
+				geometrySelectionActivated = false;
+				infoLabelActivated = false;
+
+				// Remove interactions
+				removeAllInteractions();
 			}
 
 			function toggleDrawing() {
+				let isActivated = geometrySelectionActivated;
 				deactivateAllTools();
 
 				let geometrySelection = document.getElementById("geometry-selection");
-				let drawButton = document.getElementById("draw-button");
+				let button = document.getElementById("draw-button");
 
-				if (!geometrySelectionActivated) {
+				if (!isActivated) {
 					updateInteractions();
 
 					geometrySelection.style.display = "contents";
-					drawButton.classList.add("clicked");
-				} else {
-					removeAllInteractions();
-					addSelectInteraction();
+					button.classList.add("clicked");
 				}
 
-				geometrySelectionActivated = !geometrySelectionActivated;
+				geometrySelectionActivated = !isActivated;
+			}
+
+			function toggleMeasureDistance() {
+				let isActivated = infoLabelActivated;
+				deactivateAllTools();
+
+				let infoLabel = document.getElementById("line-length-info");
+				let button = document.getElementById("measure-distance-button");
+
+				if (!isActivated) {
+					addSelectInteraction();
+
+					infoLabel.style.display = "contents";
+					button.classList.add("clicked");
+				}
+
+				infoLabelActivated = !isActivated;
 			}
 
 			/*
@@ -326,7 +357,6 @@
 			function addSelectInteraction() {
 				map.addInteraction(selectFeature);
 			}
-			addSelectInteraction();
 		</script>
 	</body>
 </html>
