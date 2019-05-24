@@ -44,6 +44,7 @@
 				background-color: rgba(0,60,136,.5);
 				color: white;
 				padding: 5px 10px;
+				margin-right: 10px;
 				min-width: 35px;
 				height: 35px;
 			}
@@ -55,6 +56,10 @@
 				color: rgba(0,60,136,.75);
 			}
 
+			.control-button-row {
+				display: flex;
+			}
+
 			.map-tool-row {
 				display: flex;
 				justify-content: space-between;
@@ -62,6 +67,10 @@
 
 			.map-tool-selection {
 				display: flex;
+			}
+
+			#line-length-label {
+				margin-right: 5px;
 			}
 
 			/*
@@ -72,9 +81,14 @@
 				display: none;
 			}
 
+			#line-length-info {
+				display: none;
+			}
+
 			#space {
 				border-right: solid 1px grey;
-				margin: 0px 10px;
+				margin-left: 5px;
+				margin-right: 10px;
 			}
 
 			/*
@@ -91,10 +105,11 @@
 	<body>
 		<div class="container">
 			<div class="toolbar">
-				<div>
-					<button type="button" onclick="loadLines()">Load</button>
-					<button type="button" onclick="saveFeatures()">Save</button>
+				<div class="control-button-row">
+					<button id="load-button" type="button" onclick="loadLines()">Load</button>
+					<button id="save-button" type="button" onclick="saveFeatures()">Save</button>
 				</div>
+
 				<div class="map-tool-row">
 					<div class="map-tool-selection">
 						<button id="draw-button" type="button" onclick="toggleDrawing()">Draw</button>
@@ -109,11 +124,11 @@
 								<option value="Polygon">Fläche</option>
 							</select>
 						</div>
-					</div>
 
-					<div class="map-feature-info">
-						<div id="line-length-info" >
-							<span>Line length: </span><span id="line-length-label"></span>
+						<div class="map-feature-info">
+							<div id="line-length-info" >
+								<span>Line length: </span><span id="line-length-label"></span>
+							</div>
 						</div>
 					</div>
 				</div>
