@@ -242,19 +242,29 @@
 				input.onchange = e => {
 					var file = e.target.files[0];
 					console.log("Open file '" + file.name + "'");
+					let fileSplit= file.name.split(".");
+					console.log(fileSplit);
+					let fileExtention = fileSplit[fileSplit.length - 1];
+
 					// setting up the reader
 					var reader = new FileReader();
 					reader.readAsText(file,'UTF-8');
 					
 					// here we tell the reader what to do when it's done reading...
 					reader.onload = readerEvent => {
+						var features;
 						var content = readerEvent.target.result; // this is the content!
 						console.log(content);
 
-						var writer = new ol.format.GeoJSON();
-						let obj = JSON.parse(content);
-						var features = writer.readFeatures(obj);
-
+						if (fileExtention === "json") {
+							console.log("Use JSON-format");
+							var writer = new ol.format.GeoJSON();
+							let obj = JSON.parse(content);
+							features = writer.readFeatures(obj);
+						} else if(fileExtention === "gpx") {
+							console.log("Use GPX-format");
+							features = (new ol.format.GPX()).readFeatures(content, {featureProjection: 'EPSG:3857'});
+						}
 						console.log(features);
 						source.addFeatures(features);
 					}
