@@ -114,6 +114,7 @@
 					<div class="map-tool-selection">
 						<button id="draw-button" type="button" onclick="toggleDrawing()">Draw</button>
 						<button id="measure-distance-button" type="button" onclick="toggleMeasureDistance()">Distance</button>
+						<button id="remove-feature-button" type="button" onclick="toggleRemoveFeature()">Delete</button>
 
 						<div id="space"></div>
 
@@ -190,6 +191,7 @@
 				map.removeInteraction(snap);
 				map.removeInteraction(modify);
 				map.removeInteraction(selectFeature);
+				map.removeInteraction(selectFeatureToDelete);
 			}
 
 			function updateInteractions() {
@@ -284,6 +286,7 @@
 			// All tools are off per default
 			let geometrySelectionActivated = false;
 			let infoLabelActivated = false;
+			let removeInteractionActivated = false;
 
 			function anyToolActicated() {
 				return geometrySelectionActivated;
@@ -304,9 +307,14 @@
 				button = document.getElementById("measure-distance-button");
 				button.classList.remove("clicked");
 
+				// Remove
+				button = document.getElementById("remove-feature-button");
+				button.classList.remove("clicked");
+
 				// Set variables
 				geometrySelectionActivated = false;
 				infoLabelActivated = false;
+				removeInteractionActivated = false;
 
 				// Remove interactions
 				removeAllInteractions();
@@ -346,6 +354,21 @@
 				infoLabelActivated = !isActivated;
 			}
 
+			function toggleRemoveFeature() {
+				let isActivated = removeInteractionActivated;
+				deactivateAllTools();
+				
+				let button = document.getElementById("remove-feature-button");
+
+				if (!isActivated) {
+					addRemoveFeatureInteraction();
+
+					button.classList.add("clicked");
+				}
+
+				removeInteractionActivated = !isActivated;
+			}
+
 			/*
 			*
 			*
@@ -381,6 +404,29 @@
 
 			function addSelectInteraction() {
 				map.addInteraction(selectFeature);
+			}
+
+			
+			/*
+			*
+			*
+			*    Remove feature
+			*
+			*
+			*/
+			let selectFeatureToDelete = new ol.interaction.Select();
+
+			selectFeatureToDelete.on("select", function(e) {
+				var target = e.selected[0];
+
+				if (target) {
+					this.getLayer(target).getSource().removeFeature(target);
+					this.getFeatures().remove(target); // to unselect deleted features
+				}
+			});
+
+			function addRemoveFeatureInteraction() {
+				map.addInteraction(selectFeatureToDelete);
 			}
 		</script>
 	</body>
